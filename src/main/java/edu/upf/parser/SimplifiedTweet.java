@@ -55,31 +55,60 @@ public class SimplifiedTweet {
   public long getTimestampMs() {
     return timestampMs;
   }
-  /**
-   * Returns a {@link SimplifiedTweet} from a JSON String.
-   * If parsing fails, for any reason, return an {@link Optional#empty()}
-   *
-   * @param jsonStr
-   * @return an {@link Optional} of a {@link SimplifiedTweet}
-   */
+
   public static Optional<SimplifiedTweet> fromJson(String jsonStr) {
-      try {
+    Optional<SimplifiedTweet> st = Optional.empty();
+    Gson gson = new Gson();
+    JsonObject obj = gson.fromJson(jsonStr, JsonObject.class);
 
-          JsonObject jsonObject = parser.parse(jsonStr).getAsJsonObject();
-          long tweetId = jsonObject.get("id").getAsLong();
-          String text = jsonObject.get("text").getAsString();
-          JsonObject user = jsonObject.get("user").getAsJsonObject();
-          long userId = user.get("id").getAsLong();
-          String userName = user.get("name").getAsString();
-          String language = jsonObject.get("lang").getAsString();
-          long timestampMs = jsonObject.get("timestamp_ms").getAsLong();
+    if (isValidJsonObject(obj)) {
+        Long userId = getJsonElementValue(obj, "user.id", 0L);
+        String userName = getJsonElementValue(obj, "user.name", "");
+        Long tweetId = getJsonElementValue(obj, "id", 0L);
+        String text = getJsonElementValue(obj, "text", "");
+        String language = getJsonElementValue(obj, "lang", "");
+        Long timestampMs = getJsonElementValue(obj, "timestamp_ms", 0L);
 
-          return Optional.of(new SimplifiedTweet(tweetId, text, userId, userName, language, timestampMs));
-      
-        } catch (Exception e) {
-          return Optional.empty();
-      }
-  }
+        st = Optional.of(new SimplifiedTweet(tweetId, text, userId, userName, language, timestampMs));
+    }
+
+    return st;
+}
+
+private static boolean isValidJsonObject(JsonObject obj) {
+    return obj != null &&
+            obj.has("id") &&
+            obj.has("text") &&
+            obj.has("lang") &&
+            obj.has("timestamp_ms") &&
+            obj.has("user") &&
+            obj.get("user").isJsonObject() &&
+            obj.getAsJsonObject("user").has("id") &&
+            obj.getAsJsonObject("user").has("name");
+}
+
+private static <T> T getJsonElementValue(JsonObject obj, String key, T defaultValue) {
+    JsonElement element = obj;
+    String[] keys = key.split("\\.");
+    for (String k : keys) {
+        if (element.isJsonObject() && element.getAsJsonObject().has(k)) {
+            element = element.getAsJsonObject().get(k);
+        } else {
+            return defaultValue;
+        }
+    }
+
+    if (element.isJsonNull()) {
+        return defaultValue;
+    }
+
+    try {
+        return (T) element.getAsObject();
+    } catch (ClassCastException e) {
+        return defaultValue;
+    }
+}
+
 
   @Override
   public String toString() {

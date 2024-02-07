@@ -1,49 +1,47 @@
 package edu.upf.filter;
 
-
-import java.io.*;
+import edu.upf.parser.SimplifiedTweet;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.Optional;
 
-import edu.upf.parser.SimplifiedTweet;
-
 public class FileLanguageFilter implements LanguageFilter {
-    private String inputFile;
-    private String outputFile;
+  final String inputFile;
+  final String outputFile;
+  private int _line_count;
 
-    public FileLanguageFilter(String inputFile, String outputFile) {
-        this.inputFile = inputFile;
-        this.outputFile = outputFile;
-    }
+  public FileLanguageFilter(String inputFile, String outputFile) {
+    this.inputFile = inputFile;
+    this.outputFile = outputFile;
+  }
 
-    @Override
-    public void filterLanguage(String language) throws Exception {
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-                 BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile, true))) {
-                
-                StringBuilder stringBuilder = new StringBuilder(); // Create a StringBuilder to store the lines
-                
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    stringBuilder.append(line); // Append each line to the StringBuilder
-                }
-                
-                String content = stringBuilder.toString(); // Convert the StringBuilder to a single string
-                
-                Optional<SimplifiedTweet> tweet = parseLineToTweet(content); // Parse the content as a SimplifiedTweet
+  public int Get_Line_Count(){
+    return _line_count;
+  }
 
-                if (tweet.isPresent() && tweet.get().getLanguage().equals(language)) {
-                    writer.write(content);
-                    writer.newLine();
-                }
-                
-            } catch (IOException e) {
-            throw new Exception("Error processing file", e);
+  @Override
+  public void filterLanguage(String language) throws Exception {
+    // Use try-with-resources to automatically close the file after reading
+    try (BufferedReader br = new BufferedReader(new FileReader(inputFile))) {
+        String line;
+        _line_count = 0;
+        while ((line = br.readLine()) != null) {
+          Optional<SimplifiedTweet> st = SimplifiedTweet.fromJson(line);
+          if (st.isPresent() && st.get().getLanguage().equals(language)) {
+            // Write the filtered tweet to the output file
+            try (PrintWriter pw = new PrintWriter(new FileWriter(outputFile, true))) {
+              pw.println(line);
+              _line_count++;
+            } catch (Exception e) {
+              throw new Exception("Error writing to output file", e);
+            }
+          }
         }
-    }
-
-    private Optional<SimplifiedTweet> parseLineToTweet(String line) {
-        return null;
-        // Implement this method based on your SimplifiedTweet structure
-        // Return an Optional<SimplifiedTweet>
-    }
+        System.out.println("The file: " + inputFile + " has been written to: " + outputFile);
+      } catch (Exception e) {
+        throw new Exception("Error reading input file", e);
+      }
+  }
 }
