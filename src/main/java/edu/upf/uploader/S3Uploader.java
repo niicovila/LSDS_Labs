@@ -47,22 +47,11 @@ public class S3Uploader implements Uploader {
             if(f != null){
                 String key = prefix + "/" + file;
                 try {
-                    /*System.out.println("Start uploading file: " + file);
-                    s3Client.putObject(bucketName, key, f);
-                    System.out.println("The file: " + file + " was successfully uploaded.");*/
                     System.out.println("Start uploading file: " + file);
-                    TransferManager tm = TransferManagerBuilder.standard().build();
-                    Upload upload = tm.upload(bucketName, key, new File(file));
-                    upload.addProgressListener(new ProgressListener() {
-                        @Override
-                        public void progressChanged(ProgressEvent progressEvent) {
-                            System.out.println("Upload progress: " + String.format("%.2f", upload.getProgress().getPercentTransferred()) + "%");
-                        }
-                    });
-                    upload.waitForCompletion();
+                    s3Client.putObject(bucketName, key, f);
                     System.out.println("The file: " + file + " was successfully uploaded.");
 
-                } catch (AmazonServiceException  | InterruptedException e) {
+                } catch (AmazonServiceException e) {
                     throw new RuntimeException("Error uploading file to S3: " + file, e);
                 }
             }
