@@ -22,13 +22,11 @@ public class TwitterFilter {
         long startTime = System.nanoTime();
         for(String inputFile: argsList.subList(3, argsList.size())) {
             System.out.println("Processing: " + inputFile);
-            //System.out.println(System.getProperty("user.dir"));
+
             FileLanguageFilter ff = new FileLanguageFilter(inputFile, outputFile);
             ff.filterLanguage(language);
             tweets_Count += ff.Get_Line_Count();
-            //final FileLanguageFilter filter = new FileLanguageFilter(inputFile, outputFile);
-            //filter.filterLanguage(language);
-            //l_Tweets.addAll(read_File(inputFile));
+
         }
         long endTime   = System.nanoTime();
         long totalTime_build_outputFile = endTime - startTime;
@@ -47,12 +45,11 @@ public class TwitterFilter {
         endTime   = System.nanoTime();
         long totalTime_Upload = endTime - startTime;
 
-        
-        System.out.println("it took a total of " + totalTime_build_outputFile/ 1000000000.0 + " seconds for building " + outputFile);
+        System.out.println("Building time of " + outputFile + ": " + totalTime_build_outputFile/ 1000000000.0 + " seconds" );
 
-        System.out.println("it took a total of " + totalTime_Upload/ 1000000000.0 + " seconds for uploading "+ outputFile);
+        System.out.println("Uploading time to S3: " + totalTime_Upload/ 1000000000.0 + " seconds");
 
-        System.out.println("A total of " + tweets_Count + " resulting tweets");
+        System.out.println("Number of tweets: " + tweets_Count);
 
         System.exit(0);
     }
