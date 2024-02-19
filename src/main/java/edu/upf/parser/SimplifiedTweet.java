@@ -1,16 +1,9 @@
 package edu.upf.parser;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 public class SimplifiedTweet  {
 
@@ -21,6 +14,7 @@ public class SimplifiedTweet  {
   private final String userName;	
   private final String language;        
   private final long timestampMs;		
+  private static final Gson gson = new Gson();
 
 
   public SimplifiedTweet(long tweetId, String text, long userId, String userName, String language, long timestampMs) {
@@ -31,7 +25,6 @@ public class SimplifiedTweet  {
     this.userName = userName;
     this.language = language;
     this.timestampMs = timestampMs;
-
   }
 
   /**
@@ -42,78 +35,38 @@ public class SimplifiedTweet  {
    * @return an {@link Optional} of a {@link SimplifiedTweet}
    */
    
-  public static Optional<SimplifiedTweet> fromJson(String jsonStr) {
-   
-    Optional<SimplifiedTweet> st = Optional.empty();
-
-    Gson gson = new Gson();
-    JsonObject _obj = gson.fromJson(jsonStr, JsonObject.class);
-    if (_obj != null){
-      if(_obj.has("id") && _obj.has("text") &&
-      _obj.has("lang") && _obj.has("timestamp_ms") && _obj.has("user")){
-        Long userId = (long) 0;
-        String userName = "";
-        JsonElement userElement = _obj.get("user");
-        if (userElement != null && !userElement.isJsonNull()) {
-          if (userElement.isJsonObject()) {
-            JsonObject userObject = userElement.getAsJsonObject();
-            JsonElement idElement = userObject.get("id");
-            if (idElement != null && !idElement.isJsonNull()) {
-              userId = idElement.getAsLong();
-              idElement = userObject.get("name");
-              if (idElement != null && !idElement.isJsonNull()) {
-                userName = idElement.getAsString();
-                Long tweetId = _obj.get("id").getAsLong();
-                String text = _obj.get("text").getAsString();
-                String language = _obj.get("lang").getAsString();
-                Long timestampMs = _obj.get("timestamp_ms").getAsLong();
-                
-                st = Optional.of(new SimplifiedTweet(tweetId,  text, userId, userName, language, timestampMs));
-              }
+   public static Optional<SimplifiedTweet> fromJson(String jsonInput) {
+    Optional<SimplifiedTweet> resultTweet = Optional.empty();
+    JsonObject jsonObject = gson.fromJson(jsonInput, JsonObject.class);
+    if (jsonObject != null){
+        if(jsonObject.has("id") && jsonObject.has("text") &&
+        jsonObject.has("lang") && jsonObject.has("timestamp_ms") && jsonObject.has("user")){
+            Long userId = (long) 0;
+            String userName = "";
+            JsonElement userElement = jsonObject.get("user");
+            if (userElement != null && !userElement.isJsonNull()) {
+                if (userElement.isJsonObject()) {
+                    JsonObject userObject = userElement.getAsJsonObject();
+                    JsonElement idElement = userObject.get("id");
+                    if (idElement != null && !idElement.isJsonNull()) {
+                        userId = idElement.getAsLong();
+                        idElement = userObject.get("name");
+                        if (idElement != null && !idElement.isJsonNull()) {
+                            userName = idElement.getAsString();
+                            Long tweetId = jsonObject.get("id").getAsLong();
+                            String text = jsonObject.get("text").getAsString();
+                            String language = jsonObject.get("lang").getAsString();
+                            Long timestampMs = jsonObject.get("timestamp_ms").getAsLong();
+                            
+                            resultTweet = Optional.of(new SimplifiedTweet(tweetId,  text, userId, userName, language, timestampMs));
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-    
-    return st;
-
-  }
-
-  /*public static SimplifiedTweet from_Json(String jsonStr) {
-    SimplifiedTweet st = null;
-    Gson gson = new Gson();
-    JsonObject _obj = gson.fromJson(jsonStr, JsonObject.class);
-    if (_obj != null){
-      if(_obj.has("id") && _obj.has("text") &&
-      _obj.has("lang") && _obj.has("timestamp_ms") && _obj.has("user")){
-        Long userId = (long) 0;
-        String userName = "";
-        JsonElement userElement = _obj.get("user");
-        if (userElement != null && !userElement.isJsonNull()) {
-          if (userElement.isJsonObject()) {
-            JsonObject userObject = userElement.getAsJsonObject();
-            JsonElement idElement = userObject.get("id");
-            if (idElement != null && !idElement.isJsonNull()) {
-              userId = idElement.getAsLong();
-              idElement = userObject.get("name");
-              if (idElement != null && !idElement.isJsonNull()) {
-                userName = idElement.getAsString();
-                Long tweetId = _obj.get("id").getAsLong();
-                String text = _obj.get("text").getAsString();
-                String language = _obj.get("lang").getAsString();
-                Long timestampMs = _obj.get("timestamp_ms").getAsLong();
-                st = new SimplifiedTweet(tweetId,  text, userId, userName, language, timestampMs);
-              }
-            }
-          }
-        }
-      }
-    }
-    
-    return st;
-  }*/
-
+    return resultTweet;
+}
 
   @Override
   public String toString() {

@@ -25,3 +25,8 @@ OS: macOS
 RAM: 8 GB
 
 We didn’t find any issue when performing the calculations.  
+
+## Example Execution 
+
+mvn package
+java -jar target/lab1-1.0-SNAPSHOT.jar es  /tmp/output-es.txt lsds2024.lab1.output.u186656 Data/Eurovision3.json
