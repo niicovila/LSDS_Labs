@@ -15,8 +15,8 @@ Students: u186656, u199772, u199150
     - Number of uploaded tweets: 509435
 
  Uploading tweets in Catalan (ca) with all the Eurovision files to bucket  lsds2024.lab1.output.u186656/ca
-    - Total time to process tweets: 70.904933458
-    - Total time to upload tweets: 3.86590675
+    - Total time to process tweets: 70.904933458 seconds
+    - Total time to upload tweets: 3.86590675 seconds
     - Number of uploaded tweets: 4583
 
 ## Runtime environment: 
