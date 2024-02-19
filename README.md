@@ -3,7 +3,6 @@ Students: u186656, u199772, u199150
 
 
  ## Benchmarking
-
 Uploading tweets in English (en) with all the Eurovision files to bucket  lsds2024.lab1.output.u186656/en
 - Total time to process tweets: 95 seconds
 - Total time to upload tweets: 80 seconds
@@ -24,6 +23,12 @@ Uploading tweets in English (en) with all the Eurovision files to bucket  lsds20
 - OS: macOS
 - RAM: 8 GB
 
+## Questions
+
+- Does the bucket exist? What happens if it doesn’t? 
+Yes, the bucket exists. If the program doesn’t find the bucket it prints an error message: Exception in thread "main" java.lang.IllegalArgumentException: Bucket does not exist.
+
+- Did you encounter any issue when performing the calculation?
 We didn’t find any issue when performing the calculations.  
 
 ## Example Execution 
