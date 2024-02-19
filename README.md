@@ -31,3 +31,24 @@ We didn’t find any issue when performing the calculations.
 ```bash
 mvn package
 java -jar target/lab1-1.0-SNAPSHOT.jar es  /tmp/output-es.txt lsds2024.lab1.output.u186656 Data/Eurovision3.json
+```
+
+## Extensions: Unit Tests for SimplifiedTweet
+
+The unit tests for the `SimplifiedTweet` class are located in the `SimplifiedTweetTest` class. They test the functionality of the `SimplifiedTweet` class.
+
+## Test: testParseRealTweet
+
+This test checks if the `fromJson` method can correctly parse a valid JSON string into a `SimplifiedTweet` object. The JSON string is read from a file named `valid-simplified-tweet.json`. The test asserts that the `fromJson` method returns a `SimplifiedTweet` object with the expected field values.
+
+## Test: testParseInvalidJson
+
+This test checks how the `fromJson` method handles an invalid JSON string. The JSON string is read from a file named `invalid-simplified-tweet.json` containing an invalid json. The test asserts that the `fromJson` method returns an empty `Optional` for an invalid JSON string.
+
+## Test: testParseJsonWithMissingField
+
+This test checks how the `fromJson` method handles a JSON string that's missing a field. The JSON string is read from a file named `simplified-tweet-with-missing-field.json`. The test asserts that the `fromJson` method returns an empty `Optional` when a necessary field is missing from the JSON string.
+
+# Running the Tests
+
+The tests run automatically after compiling the project with maven
