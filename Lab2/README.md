@@ -1,6 +1,7 @@
 ## Large Scale Distributed Systems -- Lab 2 Solutions
 
 ### Students: u186656
+
 ### Benchamrk the Spark-based TwitterFilter application on EMR (two m5.large tasks)
 
  - Spanish tweets ('es') elapsed time: 52 seconds. Total output files size: 52.6 Mb
