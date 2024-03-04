@@ -2,9 +2,9 @@
 
 ### Benchamrk the Spark-based TwitterFilter application on EMR (two m5.large tasks)
 
- - Spanish tweets ('es') elapsed time: 52 seconds. Total size: 52.6 Mb
- - English tweets ('en') elapsed time: 50 seconds. Total size: 41.1 Mb
- - Catalan tweets ('ca') elapsed time: 1:08 minutes. Total size: 453.3 KB
+ - Spanish tweets ('es') elapsed time: 52 seconds. Total output files size: 52.6 Mb
+ - English tweets ('en') elapsed time: 50 seconds. Total output files size: 41.1 Mb
+ - Catalan tweets ('ca') elapsed time: 1:08 minutes. Total output files size: 453.3 KB
 
 ### Most Popular BiGrams found:
  - Top-10 BiGrams in spanish ('es') count: (elapsed time: 1:18 minutes)
@@ -42,3 +42,7 @@
     - ((#france,blew),45)
     - ((wilāyat,al-barakah),45)
     - ((up,–),45)
+  
+### Most Retweeted Tweets: (elapsed time: 52 seconds)
+
+1. 
