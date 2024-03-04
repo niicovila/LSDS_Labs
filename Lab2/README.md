@@ -8,16 +8,16 @@
 
 ### Most Popular BiGrams found:
  - Top-10 BiGrams in spanish ('es') count: (elapsed time: 1:30 minutes)
-   1. 410646
-   2. 382465
-   3. 237158
-   4. 209572
-   5. 168344
-   6. 151394
-   7. 150368
-   8. 133049
-   9. 121762
-   10. 86249
+    - ((de,la),3421)
+((#eurovision,#finaleurovision),3341)
+((que,no),2425)
+((la,canción),2345)
+((de,#eurovision),2312)
+((en,el),2186)
+((lo,que),2035)
+((en,#eurovision),1856)
+((a,la),1843)
+((en,la),1828)
        
  - Top-10 Bigrams in english ('en') count: (elapsed time: 1:28 minutes)
    1. 282293
