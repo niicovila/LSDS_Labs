@@ -31,7 +31,7 @@
    9. 74682
    10. 71040
   
- - Top-10 Bigrams in catalan ('ca') count:
+ - Top-10 Bigrams in catalan ('ca') count: (elapsed time: 1:16 minutes)
    1. 3391
    2. 2771
    3. 2155
