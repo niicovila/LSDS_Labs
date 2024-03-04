@@ -1,4 +1,5 @@
 package edu.upf;
+
 import org.apache.spark.api.java.JavaSparkContext;
 import edu.upf.model.SimplifiedTweet;
 
@@ -7,28 +8,32 @@ import org.apache.spark.SparkConf;
 
 public class TwitterLanguageFilterApp {
     public static void main(String[] args){
-        String language = args[0];
+        String languageFilter = args[0];
         String outputDir = args[1];
-        String input = args[2];
-        // Create a Spark configuration object
-        SparkConf conf = new SparkConf().setAppName("Twitter Language Filter");
+        String inputPath = args[2];
         
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        // Create a Spark configuration object
+        SparkConf sparkConf = new SparkConf().setAppName("Twitter Language Filter");
+        
+        JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
 
         // Read the input file(s) into an RDD
-        JavaRDD<String> inputRDD = sc.textFile(input);
+        JavaRDD<String> inputLinesRDD = sparkContext.textFile(inputPath);
 
         // Parse the input RDD to create a SimplifiedTweet RDD
-        JavaRDD<SimplifiedTweet> tweetRDD = inputRDD.map(SimplifiedTweet::fromJson)
-                .filter(java.util.Optional::isPresent)
-                .map(java.util.Optional::get)
-                .filter(tweet -> tweet.getLanguage().equals(language));
+        JavaRDD<SimplifiedTweet> filteredTweetRDD = inputLinesRDD
+            .map(SimplifiedTweet::fromJson)
+            .filter(java.util.Optional::isPresent)
+            .map(java.util.Optional::get)
+            .filter(tweet -> tweet.getLanguage().equals(languageFilter));
         
-        JavaRDD<String> StringTweetRDD = tweetRDD.map(SimplifiedTweet::getText);
+        // Extract text from SimplifiedTweet RDD
+        JavaRDD<String> filteredTextRDD = filteredTweetRDD.map(SimplifiedTweet::getText);
         
-        StringTweetRDD.saveAsTextFile(outputDir);
-        // Stop the Spark context
-        sc.stop();
-        sc.close();
+        // Save filtered text RDD to output directory
+        filteredTextRDD.saveAsTextFile(outputDir);
+        
+        // Stop Spark context
+        sparkContext.stop();
     }
 }

@@ -1,89 +1,59 @@
 package edu.upf.spark;
 
-import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.SparkConf;
 
 import edu.upf.model.ExtendedSimplifiedTweet;
+
 import scala.Tuple2;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 public class BiGramsApp {
 
-    public static void main(String[] args) throws Exception {
-
+    public static void main(String[] args){
+        if (args.length != 3) {
+            System.err.println("Usage: BiGramsApp <language> <output-path> <input-path>");
+            System.exit(1);
+        }
         String language = args[0];
-        String output = args[1];
-        String input = args[2];
+        String outputDir = args[1];
+        String inputPath = args[2];
 
-        SparkConf conf = new SparkConf().setAppName("BiGramsApp");
-        
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        // Create a SparkContext to initialize
+        SparkConf conf = new SparkConf().setAppName("BiGramsExtraction");
+        JavaSparkContext sparkContext = new JavaSparkContext(conf);
 
-        JavaRDD<String> lines = sc.textFile(input);
-        JavaRDD<ExtendedSimplifiedTweet> tweets = lines.map(ExtendedSimplifiedTweet::fromJson)
-                .filter(java.util.Optional::isPresent)
-                .map(java.util.Optional::get)
-                .filter(tweet -> tweet.getLanguage().equals(language));
-        
-        // Split tweets into words and create bigrams
-        JavaRDD<String> wordsRDD = tweets.flatMap(tweet -> Arrays.asList(tweet.getText().split("\\s+")).iterator());
-        JavaPairRDD<Bigram, Integer> bigramsRDD = wordsRDD.filter(word -> !word.isEmpty())
-                .mapToPair(word -> new Tuple2<>(new Bigram(word.trim().toLowerCase(), ""), 1))
-                .union(wordsRDD.filter(word -> !word.isEmpty())
-                        .mapToPair(word -> new Tuple2<>(new Bigram("", word.trim().toLowerCase()), 1)))
-                .reduceByKey(Integer::sum);
+        JavaRDD<String> tweetsRDD = sparkContext.textFile(inputPath).cache();
 
-        // Get the top 10 most frequent bigrams
-        List<Tuple2<Integer,Bigram>> top10Bigrams = bigramsRDD.mapToPair(pair -> new Tuple2<>(pair._2, pair._1))
+        JavaPairRDD<Tuple2<String, String>, Integer> biGramsRDD = tweetsRDD
+                .flatMap(tweet -> Arrays.asList(tweet.split("[\n]")).iterator())
+                .map(tweet -> ExtendedSimplifiedTweet.fromJson(tweet))
+                .filter(tweet -> !tweet.isEmpty() && tweet.get().getLanguage().equals(language) && !tweet.get().isRetweet())
+                .flatMap(tweet -> extractBiGrams(tweet.get().getText()).iterator())
+                .mapToPair(biGram -> new Tuple2<>(biGram, 1))
+                .reduceByKey(Integer::sum)
+                .mapToPair(tuple -> tuple.swap())
                 .sortByKey(false)
-                .take(20); //take 20 to have the count of the 10 first pairs of bi-grams.
+                .mapToPair(tuple -> tuple.swap());
 
-        // Save the result to a text file
-        sc.parallelize(top10Bigrams)
-                .map(pair -> pair._2() + ": " + pair._1())
-                .saveAsTextFile(output);
-
-        // Stop the Spark Context
-
-        sc.stop();
-        sc.close();
-    }
-      
-    private static class Bigram implements Serializable{
-
-        private final String word1;
-        private final String word2;
-
-        public Bigram(String word1, String word2) {
-            this.word1 = word1;
-            this.word2 = word2;
-        }
-
-        public String getWord1() {
-            return word1;
-        }
-
-        public String getWord2() {
-            return word2;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof Bigram) {
-                Bigram other = (Bigram) obj;
-                return this.word1.equals(other.word1) && this.word2.equals(other.word2);
-            }
-            return false;
-        }
-    
-        @Override
-        public int hashCode() {
-            return (word1 + " " + word2).hashCode();
-        }
+        System.out.println("Total tweets: " + biGramsRDD.count());
+        biGramsRDD.saveAsTextFile(outputDir);
     }
 
+    public static List<Tuple2<String,String>> extractBiGrams(String text) {
+        List<Tuple2<String,String>> biGrams = new ArrayList<>();
+        String[] words = text.trim().toLowerCase().split("\\s+");
+
+        for (int i = 0; i < words.length - 1; i++) {
+            Tuple2<String,String> biGram = new Tuple2<>(words[i], words[i+1]);
+            biGrams.add(biGram);
+        }
+
+        return biGrams;
+    }
 }

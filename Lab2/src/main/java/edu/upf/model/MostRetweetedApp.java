@@ -5,23 +5,26 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.SparkConf;
 import scala.Tuple2;
 import org.apache.spark.api.java.JavaPairRDD;
-import java.io.PrintWriter;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.io.*;
 
 public class MostRetweetedApp {
-    private static final int NUM_USERS = 10;
+    private static final int NUM_TOP_USERS = 10;
 
     public static void main(String[] args) {
+        if (args.length != 2) {
+            System.err.println("Usage: MostRetweetedApp <input-path> <output-path>");
+            System.exit(1);
+        }
+        String outputPath = args[0];
+        String inputPath = args[1];
 
-        String outputPath = args[1];
+        SparkConf sparkConf = new SparkConf().setAppName("Most Retweeted");
+        JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
 
-        SparkConf conf = new SparkConf().setAppName("Most Retweeted");
-        JavaSparkContext sparkContext = new JavaSparkContext(conf);
-
-        String inputPath = args[0];
+        
         JavaRDD<String> tweetsRDD = sparkContext.textFile(inputPath + "/*.json");
 
         JavaRDD<ExtendedSimplifiedTweet> parsedTweetsRDD = tweetsRDD.flatMap(line -> {
@@ -38,7 +41,7 @@ public class MostRetweetedApp {
         List<Tuple2<Integer, Long>> sortedUserCounts = retweetedUserCountsRDD
                 .mapToPair(Tuple2::swap)
                 .sortByKey(false)
-                .take(NUM_USERS);
+                .take(NUM_TOP_USERS);
 
         List<Long> mostRetweetedUsers = sortedUserCounts.stream()
                 .map(Tuple2::_2)
@@ -64,42 +67,29 @@ public class MostRetweetedApp {
                 })
                 .collectAsMap();
 
-        System.out.println("Most retweeted tweets for the " + NUM_USERS + " most retweeted users:");
-        int i = 0;
-        for (long userId : mostRetweetedUsers) {
-            ExtendedSimplifiedTweet tweet = mostRetweetedTweets.get(userId);
-            if (tweet != null) {
-                i+=1;
-                System.out.println("#"+i + " User " + userId + ": " + tweet.getText() );
-            }
-            else {
-                System.out.println("null :(" );
-
-            }
-        }
-
         try (PrintWriter writer = new PrintWriter(outputPath)) {
-            writer.println("Most retweeted tweets for the " + NUM_USERS + " most retweeted users:");
+            writer.println("Top " + NUM_TOP_USERS + " retweeted tweets of the most retweeted users:");
             int j = 0;
             for (long userId : mostRetweetedUsers) {
                 ExtendedSimplifiedTweet tweet = mostRetweetedTweets.get(userId);
-                if (tweet != null) {
-                    j+=1;
-                    writer.println("#"+ j + " User " + userId + ": " + tweet.getText() );
-                }
-                else {
-                    writer.println("null :(" );
-    
-                }
+                j+=1;
+                writer.println(j + ". User " + userId + ": " + tweet.getText() );
+
             }
         } catch (FileNotFoundException e) {
             System.err.println("Error: " + e.getMessage());
             System.exit(1);
         }
+        
+        System.out.println("Top " + NUM_TOP_USERS + " retweeted tweets of the most retweeted users:");
+        int j = 0;
+        for (long userId : mostRetweetedUsers) {
+            ExtendedSimplifiedTweet tweet = mostRetweetedTweets.get(userId);
+            j+=1;
+            System.out.println(j + ". User " + userId + ": " + tweet.getText());
+        }
     
-
         sparkContext.stop();
-        sparkContext.close();   
     }
 
     private static int countTweetFrequency(Iterable<ExtendedSimplifiedTweet> tweets, ExtendedSimplifiedTweet tweet) {
@@ -111,6 +101,4 @@ public class MostRetweetedApp {
         }
         return count;
     }
-    
-    
 }
